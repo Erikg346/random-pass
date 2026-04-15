@@ -36,7 +36,6 @@ PASSWORD_CHARS = (
     + "!@#$%^&*()-_=+[]{}|;:,.<>?/"
 )
 
-@app.route("/generate-password")
 
 @app.route("/generate-password")
 def generate_password():

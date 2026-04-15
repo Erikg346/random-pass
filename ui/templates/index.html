@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Password Generator</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 40px;
+    }
+
+    .card {
+      max-width: 480px;
+      margin: auto;
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.3);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:disabled {
+      background: #64748b;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 12px;
+      background: #020617;
+      border-radius: 4px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .copy-btn {
+      margin-top: 10px;
+      background: #22c55e;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>Password Generator</h1>
+
+    <label>
+      Length:
+      <strong><span id="lengthValue">12</span></strong>
+      <input
+        id="length"
+        type="range"
+        min="4"
+        max="64"
+        value="12"
+      />
+    </label>
+
+    <button id="generateBtn">Generate Password</button>
+
+    <div id="spinner" class="spinner">
+      Generating…
+    </div>
+
+    <div id="result" class="result" hidden></div>
+    <div id="meta" class="meta"></div>
+
+    <button id="copyBtn" class="copy-btn" hidden>
+      Copy to Clipboard
+    </button>
+  </div>
+
+  <script>
+    const lengthInput = document.getElementById("length");
+    const lengthValue = document.getElementById("lengthValue");
+    const generateBtn = document.getElementById("generateBtn");
+    const spinner = document.getElementById("spinner");
+    const result = document.getElementById("result");
+    const meta = document.getElementById("meta");
+    const copyBtn = document.getElementById("copyBtn");
+
+    lengthInput.addEventListener("input", () => {
+      lengthValue.textContent = lengthInput.value;
+    });
+
+    generateBtn.addEventListener("click", async () => {
+      generateBtn.disabled = true;
+      spinner.style.display = "block";
+      result.hidden = true;
+      meta.textContent = "";
+      copyBtn.hidden = true;
+
+      try {
+        const start = performance.now();
+
+        const response = await fetch(
+          `/api/generate-password?length=${lengthInput.value}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        // ✅ FIX: MUST await json()
+        const data = await response.json();
+
+        const duration = Math.round(performance.now() - start);
+
+        result.textContent = data.password;
+        result.hidden = false;
+        meta.textContent = `Source: ${data.source} • ${duration} ms`;
+        copyBtn.hidden = false;
+
+      } catch (err) {
+        console.error("Password generation failed:", err);
+        meta.textContent = "Failed to generate password.";
+      } finally {
+        spinner.style.display = "none";
+        generateBtn.disabled = false;
+      }
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(result.textContent);
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => {
+        copyBtn.textContent = "Copy to Clipboard";
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

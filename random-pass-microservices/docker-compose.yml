@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  password-api:
+    build:
+      context: ./password-api
+    ports:
+      - "5000:5000"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  policy-service:
+    build:
+      context: ./policy-service
+    ports:
+      - "5001:5000"
+
+  history-service:
+    build:
+      context: ./history-service
+    ports:
+      - "5002:5000"
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  flagd:
+    image: "openfeature/flagd"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./flagd/config/flags.json:/etc/flagd/flags.json
+
+  observability:
+    image: "otel/opentelemetry-collector"
+    ports:
+      - "55678:55678"
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./observability/prometheus.yaml:/etc/prometheus/prometheus.yaml
+
+networks:
+  default:
+    driver: bridge

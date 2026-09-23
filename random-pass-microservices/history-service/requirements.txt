@@ -1,0 +1,6 @@
+Flask
+redis
+opentelemetry-api
+opentelemetry-sdk
+flask-cors
+requests

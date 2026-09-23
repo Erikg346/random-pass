@@ -1,0 +1,11 @@
+Flask
+Flask-RESTful
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Cors
+redis
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-flask
+opentelemetry-instrumentation-redis
+flagd-python-sdk

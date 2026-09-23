@@ -1,0 +1,45 @@
+{
+  "flags": {
+    "adFailure": {
+      "state": "ENABLED",
+      "variants": { "off": false, "on": true },
+      "defaultVariant": "off",
+      "description": "Fail ad service"
+    },
+    "adHighCpu": {
+      "state": "ENABLED",
+      "variants": { "off": false, "on": true },
+      "defaultVariant": "off",
+      "description": "Triggers high cpu load in the ad service"
+    },
+    "cartFailure": {
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "10%": true,
+        "25%": true,
+        "50%": true,
+        "75%": true,
+        "90%": true,
+        "100%": true
+      },
+      "defaultVariant": "off"
+    },
+    "imageSlowLoad": {
+      "state": "ENABLED",
+      "variants": { "off": false, "5sec": true, "10sec": true },
+      "defaultVariant": "off"
+    },
+    "productCatalogFailure": {
+      "state": "ENABLED",
+      "variants": { "off": false, "on": true },
+      "defaultVariant": "off"
+    },
+    "emitRawPii": {
+      "state": "ENABLED",
+      "variants": { "off": false, "on": true },
+      "defaultVariant": "off",
+      "metadata": { "schedulable": false }
+    }
+  }
+}

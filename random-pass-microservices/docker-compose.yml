@@ -1,6 +1,11 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
   password-api:
     build:
       context: ./password-api
@@ -8,46 +13,51 @@ services:
       - "5000:5000"
     environment:
       - REDIS_HOST=redis
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
     depends_on:
       - redis
-
-  policy-service:
-    build:
-      context: ./policy-service
-    ports:
-      - "5001:5000"
-
-  history-service:
-    build:
-      context: ./history-service
-    ports:
-      - "5002:5000"
-
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "3000:3000"
-
-  redis:
-    image: "redis:alpine"
-    ports:
-      - "6379:6379"
+      - otel-collector
+      - flagd
 
   flagd:
-    image: "openfeature/flagd"
-    ports:
-      - "8080:8080"
+    image: ghcr.io/open-feature/flagd:latest
+    command: ["start", "--uri", "file:./etc/flagd/flags.json"]
     volumes:
-      - ./flagd/config/flags.json:/etc/flagd/flags.json
-
-  observability:
-    image: "otel/opentelemetry-collector"
+      - ./flagd/config:/etc/flagd
     ports:
-      - "55678:55678"
+      - "8013:8013"
+      - "8016:8016"
+
+  flagd-ui:
+    build:
+      context: .
+      dockerfile: ./flagd-ui/Dockerfile
+    environment:
+      FLAGD_UI_OTEL_FLAGD_HOST: flagd
+      SECRET_KEY_BASE: dev-only-secret-key-base-for-local-compose-0123456789abcdef0123456789abcdef
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    ports:
+      - "4000:4000"
+    depends_on:
+      - flagd
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ./observability/prometheus.yaml:/etc/prometheus/prometheus.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
 
 networks:
   default:

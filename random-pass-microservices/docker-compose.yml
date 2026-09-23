@@ -19,6 +19,14 @@ services:
       - otel-collector
       - flagd
 
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - password-api
+
   flagd:
     image: ghcr.io/open-feature/flagd:latest
     command: ["start", "--uri", "file:./etc/flagd/flags.json"]

@@ -13,11 +13,91 @@ services:
       - "5000:5000"
     environment:
       - REDIS_HOST=redis
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - POLICY_SERVICE_URL=http://policy-service:5001
+      - HISTORY_SERVICE_URL=http://history-service:5002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5003
+      - SERVICE_VERSION=2.7.0
+      - SERVICE_DOMAIN=security
+      - SERVICE_TIER=backend
+      - TEAM_NAME=identity-platform
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=2.7.0,deployment.environment=local,service.domain=security,service.tier=backend,team.name=identity-platform
     depends_on:
       - redis
       - otel-collector
       - flagd
+      - policy-service
+      - history-service
+      - notification-service
+
+  policy-service:
+    build:
+      context: ./policy-service-dotnet
+    ports:
+      - "5001:5001"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=2.0.0-dotnet,deployment.environment=local,service.domain=security,service.tier=backend,team.name=identity-platform
+    depends_on:
+      - otel-collector
+
+  history-service:
+    build:
+      context: ./history-service-java
+    ports:
+      - "5002:5002"
+    environment:
+      - REDIS_HOST=redis
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=history-service
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=2.0.0-java,deployment.environment=local,service.domain=security,service.tier=backend,team.name=identity-platform
+    depends_on:
+      - redis
+      - otel-collector
+
+  api-gateway:
+    build:
+      context: ./api-gateway-dotnet
+    ports:
+      - "8080:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - PASSWORD_API_URL=http://password-api:5000
+      - POLICY_SERVICE_URL=http://policy-service:5001
+      - HISTORY_SERVICE_URL=http://history-service:5002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5003
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=1.0.0-dotnet,deployment.environment=local,service.domain=edge,service.tier=gateway,team.name=platform-engineering
+    depends_on:
+      - password-api
+      - policy-service
+      - history-service
+      - notification-service
+      - otel-collector
+
+  notification-service:
+    build:
+      context: ./notification-service
+    ports:
+      - "5003:5003"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=notification-service
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=1.0.0-node,deployment.environment=local,service.domain=messaging,service.tier=backend,team.name=platform-engineering,service.language.name=nodejs,service.framework.name=express,telemetry.sdk.language=nodejs
+      - PORT=5003
+    depends_on:
+      - otel-collector
+
+  load-generator:
+    build:
+      context: ./load-generator
+    environment:
+      - TARGET_URL=http://password-api:5000/generate-password
+      - INTERVAL_SECONDS=2
+    depends_on:
+      - password-api
+    profiles:
+      - demo
 
   frontend:
     build:
@@ -54,9 +134,6 @@ services:
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "4317:4317"
-      - "4318:4318"
     depends_on:
       - jaeger
 

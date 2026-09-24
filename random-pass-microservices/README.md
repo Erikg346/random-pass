@@ -44,7 +44,66 @@ This project is a microservices architecture for generating and managing passwor
 1. Clone the repository.
 2. Navigate to each service directory and install the required dependencies.
 3. Configure the environment variables as needed.
-4. Use `docker-compose up` to start all services.
+4. Use `docker compose up -d --build` to start all services.
+
+The primary console is available at `http://localhost:3000`. It shows live API,
+Redis, policy, history, and telemetry status. Jaeger is available at
+`http://localhost:16686`; the flag configurator is available at
+`http://localhost:4000/feature/`.
+
+## Runtime Diversity
+
+The running request path intentionally uses multiple application runtimes:
+
+| Service | Runtime | Migration story |
+| --- | --- | --- |
+| API Gateway | ASP.NET Core / .NET 8 | New front door replacing the IIS edge |
+| Password API | Python / Flask | Existing business capability extracted from the monolith |
+| Policy Service | ASP.NET Core / .NET 8 | Rules bounded context owned by a .NET team |
+| History Service | Java / Spring Boot | Event history bounded context owned by a Java team |
+| Notification Service | Node.js | Notification boundary for downstream events |
+
+The original Python policy and history implementations remain in the repository
+as reference implementations for comparing the migration.
+
+## Request Flow
+
+Password generation follows this path:
+
+`frontend -> api-gateway -> password-api -> policy-service`
+
+`password-api -> history-service -> redis`
+
+`password-api -> notification-service`
+
+Every service exports OpenTelemetry traces through the collector to Jaeger.
+The generation response includes a trace ID, and history stores generation
+metadata without storing the generated password.
+
+The flagd configuration includes demonstration scenarios for
+`simulate_api_latency`, `simulate_history_failure`, and
+`simulate_policy_failure`. These are the starting points for wiring controlled
+fault injection into the request path.
+
+## Elastic Observability Demo
+
+Start Elastic's local Elasticsearch, Kibana, and EDOT collector in a separate
+terminal:
+
+```bash
+curl -fsSL https://elastic.co/start-local | sh -s -- --edot
+```
+
+Then start this project with the optional traffic generator:
+
+```bash
+docker compose --profile demo up -d --build
+```
+
+The collector fans out traces to both Jaeger and Elastic EDOT. Open Kibana at
+`http://localhost:5601` and Jaeger at `http://localhost:16686`. The load
+generator emits one request every two seconds and prints structured request
+logs, making the distributed request flow visible during a presentation.
 
 ## Usage Examples
 

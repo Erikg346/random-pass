@@ -2,12 +2,16 @@ from flask import Flask, jsonify, request
 import secrets
 import string
 import os
+import time
+from datetime import datetime, timezone
 import redis
+import requests
 from redis.exceptions import RedisError
 
 # OpenTelemetry
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
+from opentelemetry import trace
 from otel import setup_otel
 
 setup_otel("password-api")
@@ -18,9 +22,14 @@ FlaskInstrumentor().instrument_app(app)
 RedisInstrumentor().instrument()
 
 API_VERSION = "2.7.0"
+APP_STARTED_AT = time.time()
+REQUEST_METRICS = {"requests": 0, "cache_hits": 0, "generated": 0, "errors": 0}
 
 # --- Redis ---
 redis_host = os.getenv("REDIS_HOST", "redis")
+history_service_url = os.getenv("HISTORY_SERVICE_URL", "http://history-service:5002")
+policy_service_url = os.getenv("POLICY_SERVICE_URL", "http://policy-service:5001")
+notification_service_url = os.getenv("NOTIFICATION_SERVICE_URL", "http://notification-service:5003")
 redis_client = redis.Redis(
     host=redis_host,
     port=6379,
@@ -38,29 +47,98 @@ PASSWORD_CHARS = (
 
 @app.route("/generate-password")
 def generate_password():
-    length = int(request.args.get("length", 12))
+    REQUEST_METRICS["requests"] += 1
+    started_at = time.perf_counter()
+
+    try:
+        length = int(request.args.get("length", 12))
+    except (TypeError, ValueError):
+        REQUEST_METRICS["errors"] += 1
+        return jsonify({"error": "length must be an integer"}), 400
+
+    if not 8 <= length <= 128:
+        REQUEST_METRICS["errors"] += 1
+        return jsonify({"error": "length must be between 8 and 128"}), 400
+
     cache_key = f"password:{length}"
+    source = "generated"
+
+    try:
+        requests.get(f"{policy_service_url}/policies/default", timeout=0.75)
+    except requests.RequestException as e:
+        app.logger.warning(f"Policy service unavailable: {e}")
 
     try:
         cached = redis_client.get(cache_key)
         if cached:
-            return jsonify({"password": cached, "source": "cache"})
+            source = "cache"
+            password = cached
+            REQUEST_METRICS["cache_hits"] += 1
+        else:
+            password = "".join(secrets.choice(PASSWORD_CHARS) for _ in range(length))
     except RedisError as e:
         app.logger.warning(f"Redis get failed: {e}")
+        password = "".join(secrets.choice(PASSWORD_CHARS) for _ in range(length))
 
-    password = "".join(secrets.choice(PASSWORD_CHARS) for _ in range(length))
+    if source == "generated":
+        REQUEST_METRICS["generated"] += 1
+        try:
+            redis_client.setex(cache_key, 60, password)
+        except RedisError as e:
+            app.logger.warning(f"Redis set failed: {e}")
+
+    span = trace.get_current_span()
+    span_context = span.get_span_context()
+    trace_id = format(span_context.trace_id, "032x") if span_context.is_valid else None
 
     try:
-        redis_client.setex(cache_key, 60, password)
-    except RedisError as e:
-        app.logger.warning(f"Redis set failed: {e}")
+        requests.post(
+            f"{history_service_url}/log-password-generation",
+            json={"user_id": "demo-user", "length": length, "source": source, "trace_id": trace_id},
+            timeout=0.75,
+        )
+    except requests.RequestException as e:
+        app.logger.warning(f"History service unavailable: {e}")
 
-    return jsonify({"password": password, "source": "generated"})
+    try:
+        requests.post(
+            f"{notification_service_url}/notifications",
+            json={"user_id": "demo-user", "length": length, "source": source, "trace_id": trace_id},
+            timeout=0.75,
+        )
+    except requests.RequestException as e:
+        app.logger.warning(f"Notification service unavailable: {e}")
+
+    return jsonify({
+        "password": password,
+        "source": source,
+        "trace_id": trace_id,
+        "duration_ms": round((time.perf_counter() - started_at) * 1000, 2),
+    })
 
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "UP"})
+    redis_status = "UP"
+    try:
+        redis_client.ping()
+    except RedisError:
+        redis_status = "DOWN"
+
+    status = "UP" if redis_status == "UP" else "DEGRADED"
+    return jsonify({"status": status, "services": {"password_api": "UP", "redis": redis_status}})
+
+
+@app.route("/metrics")
+def metrics():
+    requests = REQUEST_METRICS["requests"]
+    cache_hit_rate = round((REQUEST_METRICS["cache_hits"] / requests) * 100, 1) if requests else 0
+    return jsonify({
+        **REQUEST_METRICS,
+        "cache_hit_rate": cache_hit_rate,
+        "uptime_seconds": round(time.time() - APP_STARTED_AT),
+        "started_at": datetime.fromtimestamp(APP_STARTED_AT, timezone.utc).isoformat(),
+    })
 
 
 @app.route("/version")

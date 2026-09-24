@@ -2,6 +2,7 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
 
 processors:
   batch:
@@ -11,10 +12,22 @@ exporters:
     endpoint: jaeger:4317
     tls:
       insecure: true
+  otlp/elastic:
+    endpoint: edot-local-dev:4317
+    tls:
+      insecure: true
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp]
+      exporters: [otlp, otlp/elastic]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/elastic]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/elastic]

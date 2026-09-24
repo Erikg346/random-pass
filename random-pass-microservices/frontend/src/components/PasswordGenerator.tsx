@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 
-const PasswordGenerator: React.FC = () => {
+export type GenerationEvent = {
+    source: string;
+    traceId: string | null;
+    durationMs: number;
+    length: number;
+};
+
+type PasswordGeneratorProps = {
+    onGenerated?: (event: GenerationEvent) => void;
+};
+
+const PasswordGenerator: React.FC<PasswordGeneratorProps> = ({ onGenerated }) => {
     const [password, setPassword] = useState<string>('');
     const [length, setLength] = useState<number>(12);
     const [loading, setLoading] = useState<boolean>(false);
@@ -22,6 +33,12 @@ const PasswordGenerator: React.FC = () => {
             const data = await response.json();
             setPassword(data.password);
             setSource(data.source);
+            onGenerated?.({
+                source: data.source,
+                traceId: data.trace_id,
+                durationMs: data.duration_ms,
+                length: safeLength,
+            });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unable to reach the password API');
         } finally {

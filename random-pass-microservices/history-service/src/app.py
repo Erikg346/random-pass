@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 import os
+import json
 import redis
 from redis.exceptions import RedisError
 
@@ -28,14 +29,17 @@ redis_client = redis.Redis(
 @app.route("/log-password-generation", methods=["POST"])
 def log_password_generation():
     data = request.json
-    password = data.get("password")
     user_id = data.get("user_id")
+    length = data.get("length")
+    source = data.get("source")
+    trace_id = data.get("trace_id")
     
-    if not password or not user_id:
-        return jsonify({"error": "Password and user_id are required"}), 400
+    if not user_id or not length or not source:
+        return jsonify({"error": "user_id, length, and source are required"}), 400
 
     try:
-        redis_client.lpush("password_history", f"{user_id}:{password}")
+        event = {"user_id": user_id, "length": length, "source": source, "trace_id": trace_id}
+        redis_client.lpush("password_history", json.dumps(event))
     except RedisError as e:
         app.logger.warning(f"Redis lpush failed: {e}")
         return jsonify({"error": "Failed to log password generation"}), 500
@@ -46,7 +50,14 @@ def log_password_generation():
 def get_history(user_id):
     try:
         history = redis_client.lrange("password_history", 0, -1)
-        user_history = [entry for entry in history if entry.startswith(user_id)]
+        user_history = []
+        for entry in history:
+            try:
+                event = json.loads(entry)
+            except json.JSONDecodeError:
+                continue
+            if event.get("user_id") == user_id:
+                user_history.append(event)
     except RedisError as e:
         app.logger.warning(f"Redis lrange failed: {e}")
         return jsonify({"error": "Failed to retrieve history"}), 500
@@ -58,4 +69,4 @@ def health():
     return jsonify({"status": "UP"})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5002)

@@ -15,6 +15,11 @@ API_VERSION = "1.0.0"
 
 # In-memory storage for password policies
 password_policies = {}
+password_policies["default"] = {
+    "min_length": 12,
+    "require_uppercase": True,
+    "require_special": True,
+}
 
 @app.route("/policies", methods=["GET"])
 def get_policies():

@@ -19,6 +19,24 @@
       "state": "ENABLED",
       "variants": { "on": true, "off": false },
       "defaultVariant": "on"
+    },
+    "simulate_api_latency": {
+      "state": "ENABLED",
+      "variants": { "on": true, "off": false },
+      "defaultVariant": "off",
+      "description": "Add latency to password API requests"
+    },
+    "simulate_history_failure": {
+      "state": "ENABLED",
+      "variants": { "on": true, "off": false },
+      "defaultVariant": "off",
+      "description": "Make history logging fail for a demo"
+    },
+    "simulate_policy_failure": {
+      "state": "ENABLED",
+      "variants": { "on": true, "off": false },
+      "defaultVariant": "off",
+      "description": "Make policy lookups fail for a demo"
     }
   }
 }

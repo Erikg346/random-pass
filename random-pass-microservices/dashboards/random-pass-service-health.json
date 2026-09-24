@@ -15,7 +15,7 @@
   },
   "tags": [],
   "time_range": {
-    "from": "now-24h",
+    "from": "now-15m",
     "to": "now"
   },
   "title": "Random Pass Service Health",
@@ -36,7 +36,7 @@
       "config": {
         "hide_title": true,
         "hide_border": true,
-        "content": "##  🔐 Random Pass Service Health\nMonitor platform health, identify impacted services, analyze dependencies, and investigate failures from a single operational cockpit.",
+        "content": "##  🔐 Random Pass Service Health\nMonitor platform health, identify impacted services, analyze dependencies, and investigate failures from a single operational cockpit.",
         "settings": {
           "open_links_in_new_tab": true
         }
@@ -62,7 +62,7 @@
           "config": {
             "hide_title": true,
             "overview_mode": "single",
-            "slo_id": "adfc2266-05cf-4686-b60f-f861dfb3a108",
+            "slo_id": "b100eb80-1cf0-4c1f-8ba7-487daea520c7",
             "slo_instance_id": "*"
           },
           "id": "e0c5e991-c236-4cbe-8b7f-3a447ed02590",
@@ -78,7 +78,7 @@
           "config": {
             "hide_title": true,
             "overview_mode": "single",
-            "slo_id": "adfc2266-05cf-4686-b60f-f861dfb3a108",
+            "slo_id": "c648b8e0-10d7-4875-bcb2-91dfc66bd31e",
             "slo_instance_id": "*"
           },
           "id": "a3d258d3-af67-47e9-b926-d341d4403005",
@@ -94,7 +94,7 @@
           "config": {
             "hide_title": true,
             "overview_mode": "single",
-            "slo_id": "0737e824-f04c-47ca-b8ca-aa7f6c9f027e",
+            "slo_id": "1dcc4056-c0de-4db9-b74e-1dfe18380973",
             "slo_instance_id": "*"
           },
           "id": "d18db178-40ca-4868-9441-f85a9f2b4ae7",
@@ -743,66 +743,27 @@
       "grid": {
         "y": 9
       },
-      "id": "troubleshoot-section",
+      "id": "e481c016-68e5-4b48-9644-c13977609b3f",
       "panels": [
         {
           "grid": {
             "y": 0,
             "x": 0,
             "w": 24,
-            "h": 8
+            "h": 16
           },
           "config": {
-            "title": "🔴 Recent Failures",
+            "title": "Recent failures",
             "type": "data_table",
             "data_source": {
               "type": "esql",
-              "query": "FROM traces-generic.otel-default | WHERE attributes.event.outcome == \"failure\" | STATS failure_count = COUNT(), latest = MAX(@timestamp) BY attributes.error.type | SORT latest DESC"
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" AND event.outcome == \"failure\" | STATS failures = COUNT() BY service.name, trace.id, span.id, @timestamp | SORT @timestamp DESC | LIMIT 50"
             },
             "sampling": 1,
             "ignore_global_filters": false,
             "metrics": [
               {
-                "column": "failure_count"
-              },
-              {
-                "column": "latest"
-              }
-            ],
-            "rows": [
-              {
-                "column": "attributes.error.type"
-              }
-            ]
-          },
-          "id": "panel-recent-failures",
-          "type": "vis"
-        },
-        {
-          "grid": {
-            "y": 0,
-            "x": 24,
-            "w": 24,
-            "h": 8
-          },
-          "config": {
-            "title": "🐌 Slowest Transactions",
-            "type": "data_table",
-            "data_source": {
-              "type": "esql",
-              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | EVAL duration_ms = transaction.duration.us / 1000 | STATS p95_ms = PERCENTILE(duration_ms, 95), p99_ms = PERCENTILE(duration_ms, 99), count = COUNT() BY service.name, name | SORT p95_ms DESC | LIMIT 25"
-            },
-            "sampling": 1,
-            "ignore_global_filters": false,
-            "metrics": [
-              {
-                "column": "p95_ms"
-              },
-              {
-                "column": "p99_ms"
-              },
-              {
-                "column": "count"
+                "column": "failures"
               }
             ],
             "rows": [
@@ -810,11 +771,56 @@
                 "column": "service.name"
               },
               {
-                "column": "name"
+                "column": "trace.id"
+              },
+              {
+                "column": "span.id"
+              },
+              {
+                "column": "@timestamp"
               }
             ]
           },
-          "id": "panel-slowest-transactions",
+          "id": "4478d371-df35-44b0-86c4-27dd3aefd3bd",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 24,
+            "w": 24,
+            "h": 16
+          },
+          "config": {
+            "title": "Slowest transactions",
+            "type": "data_table",
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | EVAL duration_ms = transaction.duration.us / 1000 | STATS p95_ms = PERCENTILE(duration_ms, 95), samples = COUNT() BY service.name, trace.id, span.id, duration_ms | WHERE duration_ms > 100 | SORT duration_ms DESC | LIMIT 50"
+            },
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "column": "duration_ms"
+              },
+              {
+                "column": "p95_ms"
+              }
+            ],
+            "rows": [
+              {
+                "column": "service.name"
+              },
+              {
+                "column": "trace.id"
+              },
+              {
+                "column": "span.id"
+              }
+            ]
+          },
+          "id": "7a0a1142-10e4-4448-99b5-9ba5608e3aea",
           "type": "vis"
         }
       ]

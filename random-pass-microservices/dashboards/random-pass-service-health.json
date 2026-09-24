@@ -1,0 +1,824 @@
+{
+  "description": "Native ESQ operations cockpit for the polyglot Random Pass platform",
+  "options": {
+    "auto_apply_filters": true,
+    "hide_panel_borders": false,
+    "hide_panel_titles": false,
+    "sync_colors": true,
+    "sync_cursor": true,
+    "sync_tooltips": true,
+    "use_margins": true
+  },
+  "refresh_interval": {
+    "pause": false,
+    "value": 10000
+  },
+  "tags": [],
+  "time_range": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "title": "Random Pass Service Health",
+  "filters": [],
+  "esql_approximation": false,
+  "query": {
+    "expression": "",
+    "language": "kql"
+  },
+  "panels": [
+    {
+      "grid": {
+        "y": 0,
+        "x": 0,
+        "w": 48,
+        "h": 4
+      },
+      "config": {
+        "hide_title": true,
+        "hide_border": true,
+        "content": "##  🔐 Random Pass Service Health\nMonitor platform health, identify impacted services, analyze dependencies, and investigate failures from a single operational cockpit.",
+        "settings": {
+          "open_links_in_new_tab": true
+        }
+      },
+      "id": "c2216378-a022-40cc-90f8-6cb124b9e5dd",
+      "type": "markdown"
+    },
+    {
+      "collapsed": false,
+      "title": "🛡️ SLOs",
+      "grid": {
+        "y": 4
+      },
+      "id": "1d365e14-0989-4307-9d10-26e58c9c4e05",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 0,
+            "w": 16,
+            "h": 6
+          },
+          "config": {
+            "hide_title": true,
+            "overview_mode": "single",
+            "slo_id": "adfc2266-05cf-4686-b60f-f861dfb3a108",
+            "slo_instance_id": "*"
+          },
+          "id": "e0c5e991-c236-4cbe-8b7f-3a447ed02590",
+          "type": "slo_overview"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 16,
+            "w": 16,
+            "h": 6
+          },
+          "config": {
+            "hide_title": true,
+            "overview_mode": "single",
+            "slo_id": "adfc2266-05cf-4686-b60f-f861dfb3a108",
+            "slo_instance_id": "*"
+          },
+          "id": "a3d258d3-af67-47e9-b926-d341d4403005",
+          "type": "slo_overview"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 32,
+            "w": 16,
+            "h": 6
+          },
+          "config": {
+            "hide_title": true,
+            "overview_mode": "single",
+            "slo_id": "0737e824-f04c-47ca-b8ca-aa7f6c9f027e",
+            "slo_instance_id": "*"
+          },
+          "id": "d18db178-40ca-4868-9441-f85a9f2b4ae7",
+          "type": "slo_overview"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "title": "🧭 Executive Overview",
+      "grid": {
+        "y": 5
+      },
+      "id": "9b4f5f0d-79fa-40df-98cc-3ded8d55e281",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 0,
+            "w": 10,
+            "h": 6
+          },
+          "config": {
+            "title": "Availability %",
+            "hide_title": true,
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | STATS total = COUNT(*), success = COUNT(*) WHERE event.outcome == \"success\" | EVAL availability = ROUND(success * 100.0 / total, 2)"
+            },
+            "type": "metric",
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "type": "primary",
+                "column": "availability",
+                "label": "Availability %",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "styling": {
+              "density": "default",
+              "primary": {
+                "position": "bottom",
+                "labels": {
+                  "alignment": "left"
+                },
+                "value": {
+                  "sizing": "auto",
+                  "alignment": "right"
+                }
+              }
+            }
+          },
+          "id": "c3d35bd8-db8d-4452-bb63-21730f4fecdf",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 10,
+            "w": 10,
+            "h": 6
+          },
+          "config": {
+            "title": "Error rate %",
+            "hide_title": true,
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | STATS total = COUNT(*), failures = COUNT(*) WHERE event.outcome == \"failure\" | EVAL error_rate = ROUND(failures * 100.0 / total, 2)"
+            },
+            "type": "metric",
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "type": "primary",
+                "column": "error_rate",
+                "label": "Error Rate %",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "styling": {
+              "density": "default",
+              "primary": {
+                "position": "bottom",
+                "labels": {
+                  "alignment": "left"
+                },
+                "value": {
+                  "sizing": "auto",
+                  "alignment": "right"
+                }
+              }
+            }
+          },
+          "id": "12a99ce0-2cad-4394-90d8-995e62ffc947",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 20,
+            "w": 10,
+            "h": 6
+          },
+          "config": {
+            "title": "P95 latency",
+            "hide_title": true,
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | EVAL duration_ms = transaction.duration.us / 1000 | STATS p95_ms = PERCENTILE(duration_ms, 95)"
+            },
+            "type": "metric",
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "type": "primary",
+                "column": "p95_ms",
+                "label": "P95 Latency (ms)",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "styling": {
+              "density": "default",
+              "primary": {
+                "position": "bottom",
+                "labels": {
+                  "alignment": "left"
+                },
+                "value": {
+                  "sizing": "auto",
+                  "alignment": "right"
+                }
+              }
+            }
+          },
+          "id": "f3db6cd7-8aef-4d37-8e31-7e0aa3a1a831",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 30,
+            "w": 9,
+            "h": 6
+          },
+          "config": {
+            "title": "Request volume",
+            "hide_title": true,
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | STATS requests = COUNT()"
+            },
+            "type": "metric",
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "type": "primary",
+                "column": "requests",
+                "label": "Requests",
+                "background_chart": {
+                  "type": "trend"
+                },
+                "apply_color_to": "background",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "styling": {
+              "density": "default",
+              "primary": {
+                "position": "bottom",
+                "labels": {
+                  "alignment": "left"
+                },
+                "value": {
+                  "sizing": "auto",
+                  "alignment": "right"
+                }
+              }
+            }
+          },
+          "id": "1c984a27-0d70-402a-867d-f05bc51d2ca0",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 39,
+            "w": 9,
+            "h": 6
+          },
+          "config": {
+            "title": "Impacted services",
+            "hide_title": true,
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | STATS requests = COUNT(*), failures = COUNT(*) WHERE event.outcome == \"failure\" BY service.name | EVAL error_rate = failures * 100.0 / requests | WHERE error_rate > 5 | STATS impacted_services = COUNT(*)"
+            },
+            "type": "metric",
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "type": "primary",
+                "column": "impacted_services",
+                "label": "Impacted Services",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "styling": {
+              "density": "default",
+              "primary": {
+                "position": "bottom",
+                "labels": {
+                  "alignment": "left"
+                },
+                "value": {
+                  "sizing": "auto",
+                  "alignment": "right"
+                }
+              }
+            }
+          },
+          "id": "803f6bef-3105-4a59-9ff2-e73c5b5fc08a",
+          "type": "vis"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "title": "🕸️ Service Dependencies",
+      "grid": {
+        "y": 6
+      },
+      "id": "e465f37d-038b-4dfb-a7ca-468d45f60c80",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 0,
+            "w": 48,
+            "h": 14
+          },
+          "config": {
+            "title": "Service dependencies",
+            "environment": "ENVIRONMENT_ALL"
+          },
+          "id": "e495d4eb-94da-4749-bfc8-89fa70c08c8a",
+          "type": "apm_service_map"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "title": "🚦 RED Signals",
+      "grid": {
+        "y": 7
+      },
+      "id": "936e7810-eff2-43ae-b84c-4e1c71bac8b6",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 0,
+            "w": 16,
+            "h": 12
+          },
+          "config": {
+            "title": "Error rate",
+            "type": "xy",
+            "layers": [
+              {
+                "type": "line",
+                "data_source": {
+                  "type": "esql",
+                  "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | STATS total = COUNT(), failures = COUNT(*) WHERE event.outcome == \"failure\" BY service.name, BUCKET(@timestamp, 50, ?_tstart, ?_tend) | EVAL error_rate = failures / total"
+                },
+                "sampling": 1,
+                "ignore_global_filters": false,
+                "x": {
+                  "column": "BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                },
+                "y": [
+                  {
+                    "column": "error_rate"
+                  }
+                ],
+                "breakdown_by": {
+                  "column": "service.name",
+                  "color": {
+                    "mode": "categorical",
+                    "palette": "elastic_line_optimized",
+                    "mapping": []
+                  }
+                }
+              }
+            ],
+            "axis": {
+              "x": {
+                "title": {
+                  "visible": true
+                },
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "fit",
+                  "rounding": false
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                },
+                "scale": "ordinal"
+              },
+              "y": {
+                "title": {
+                  "visible": true
+                },
+                "scale": "linear",
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "full",
+                  "rounding": true
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                }
+              }
+            },
+            "styling": {
+              "overlays": {
+                "partial_buckets": {
+                  "visible": false
+                },
+                "current_time_marker": {
+                  "visible": false
+                }
+              },
+              "interpolation": "linear",
+              "points": {
+                "visibility": "auto"
+              }
+            },
+            "legend": {
+              "placement": "outside",
+              "position": "right",
+              "layout": {
+                "type": "grid",
+                "truncate": {
+                  "max_lines": 1
+                }
+              },
+              "visibility": "hidden"
+            }
+          },
+          "id": "15633825-62dd-47e7-b673-c69f328801c3",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 16,
+            "w": 16,
+            "h": 12
+          },
+          "config": {
+            "title": "Throughput",
+            "type": "xy",
+            "layers": [
+              {
+                "type": "line",
+                "data_source": {
+                  "type": "esql",
+                  "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | STATS requests = COUNT() BY service.name, BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                },
+                "sampling": 1,
+                "ignore_global_filters": false,
+                "x": {
+                  "column": "BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                },
+                "y": [
+                  {
+                    "column": "requests"
+                  }
+                ],
+                "breakdown_by": {
+                  "column": "service.name",
+                  "color": {
+                    "mode": "categorical",
+                    "palette": "elastic_line_optimized",
+                    "mapping": []
+                  }
+                }
+              }
+            ],
+            "axis": {
+              "x": {
+                "title": {
+                  "visible": true
+                },
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "fit",
+                  "rounding": false
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                },
+                "scale": "ordinal"
+              },
+              "y": {
+                "title": {
+                  "visible": true
+                },
+                "scale": "linear",
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "full",
+                  "rounding": true
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                }
+              }
+            },
+            "styling": {
+              "overlays": {
+                "partial_buckets": {
+                  "visible": false
+                },
+                "current_time_marker": {
+                  "visible": false
+                }
+              },
+              "interpolation": "linear",
+              "points": {
+                "visibility": "auto"
+              }
+            },
+            "legend": {
+              "placement": "outside",
+              "position": "right",
+              "layout": {
+                "type": "grid",
+                "truncate": {
+                  "max_lines": 1
+                }
+              },
+              "visibility": "hidden"
+            }
+          },
+          "id": "08cf8c79-4e2a-4a44-809a-e05e008ebf68",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 32,
+            "w": 16,
+            "h": 12
+          },
+          "config": {
+            "title": "P95 latency",
+            "type": "xy",
+            "layers": [
+              {
+                "type": "line",
+                "data_source": {
+                  "type": "esql",
+                  "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | EVAL duration_ms = transaction.duration.us / 1000 | STATS p95_ms = PERCENTILE(duration_ms, 95) BY service.name, BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                },
+                "sampling": 1,
+                "ignore_global_filters": false,
+                "x": {
+                  "column": "BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                },
+                "y": [
+                  {
+                    "column": "p95_ms"
+                  }
+                ],
+                "breakdown_by": {
+                  "column": "service.name",
+                  "color": {
+                    "mode": "categorical",
+                    "palette": "elastic_line_optimized",
+                    "mapping": []
+                  }
+                }
+              }
+            ],
+            "axis": {
+              "x": {
+                "title": {
+                  "visible": true
+                },
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "fit",
+                  "rounding": false
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                },
+                "scale": "ordinal"
+              },
+              "y": {
+                "title": {
+                  "visible": true
+                },
+                "scale": "linear",
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "full",
+                  "rounding": true
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                }
+              }
+            },
+            "styling": {
+              "overlays": {
+                "partial_buckets": {
+                  "visible": false
+                },
+                "current_time_marker": {
+                  "visible": false
+                }
+              },
+              "interpolation": "linear",
+              "points": {
+                "visibility": "auto"
+              }
+            },
+            "legend": {
+              "placement": "outside",
+              "position": "right",
+              "layout": {
+                "type": "grid",
+                "truncate": {
+                  "max_lines": 1
+                }
+              },
+              "visibility": "hidden"
+            }
+          },
+          "id": "4fe9915b-dfbd-4edc-b761-8f27bccbd64c",
+          "type": "vis"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "title": "🏥 Service Health Ranking",
+      "grid": {
+        "y": 8
+      },
+      "id": "71554e41-dfc6-4bdf-a8dd-fdaad53d78b4",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 0,
+            "w": 48,
+            "h": 14
+          },
+          "config": {
+            "title": "Worst performing services",
+            "type": "data_table",
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | EVAL duration_ms = transaction.duration.us / 1000 | STATS requests = COUNT(*), failures = COUNT(*) WHERE event.outcome == \"failure\", p95_ms = PERCENTILE(duration_ms, 95) BY service.name | EVAL error_rate = ROUND(failures * 100.0 / requests, 2) | WHERE requests > 50 | SORT error_rate DESC | LIMIT 10"
+            },
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "column": "requests"
+              },
+              {
+                "column": "failures"
+              },
+              {
+                "column": "error_rate"
+              },
+              {
+                "column": "p95_ms"
+              }
+            ],
+            "rows": [
+              {
+                "column": "service.name"
+              }
+            ]
+          },
+          "id": "5daa863e-e8ba-44b5-bc4b-52fad237edd5",
+          "type": "vis"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "title": "🧰 Troubleshoot",
+      "grid": {
+        "y": 9
+      },
+      "id": "troubleshoot-section",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 0,
+            "w": 24,
+            "h": 8
+          },
+          "config": {
+            "title": "🔴 Recent Failures",
+            "type": "data_table",
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE attributes.event.outcome == \"failure\" | STATS failure_count = COUNT(), latest = MAX(@timestamp) BY attributes.error.type | SORT latest DESC"
+            },
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "column": "failure_count"
+              },
+              {
+                "column": "latest"
+              }
+            ],
+            "rows": [
+              {
+                "column": "attributes.error.type"
+              }
+            ]
+          },
+          "id": "panel-recent-failures",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 24,
+            "w": 24,
+            "h": 8
+          },
+          "config": {
+            "title": "🐌 Slowest Transactions",
+            "type": "data_table",
+            "data_source": {
+              "type": "esql",
+              "query": "FROM traces-generic.otel-default | WHERE processor.event == \"transaction\" | EVAL duration_ms = transaction.duration.us / 1000 | STATS p95_ms = PERCENTILE(duration_ms, 95), p99_ms = PERCENTILE(duration_ms, 99), count = COUNT() BY service.name, name | SORT p95_ms DESC | LIMIT 25"
+            },
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "metrics": [
+              {
+                "column": "p95_ms"
+              },
+              {
+                "column": "p99_ms"
+              },
+              {
+                "column": "count"
+              }
+            ],
+            "rows": [
+              {
+                "column": "service.name"
+              },
+              {
+                "column": "name"
+              }
+            ]
+          },
+          "id": "panel-slowest-transactions",
+          "type": "vis"
+        }
+      ]
+    }
+  ],
+  "pinned_panels": []
+}

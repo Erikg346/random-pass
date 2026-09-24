@@ -1,4 +1,5 @@
 using OpenTelemetry.Resources;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,8 @@ builder.Services.AddOpenTelemetry()
             ["service.tier"] = "backend",
             ["team.name"] = "identity-platform",
         }))
+    .WithLogging(logging => logging
+        .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)))
     .WithTracing(tracing => tracing
         .AddAspNetCoreInstrumentation()
         .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)));

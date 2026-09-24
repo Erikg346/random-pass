@@ -1,3 +1,75 @@
+configs:
+  # This is the minimal yaml configuration needed to listen on all interfaces
+  # for OTLP logs, metrics and traces, exporting to Elasticsearch.
+  edot-collector-config:
+    content: |
+      extensions:
+        apmconfig:
+          source:
+            elasticsearch:
+              endpoint: http://elastic:${ES_LOCAL_PASSWORD}@elasticsearch:9200
+              cache_duration: 10s
+          opamp:
+            protocols:
+              http:
+                endpoint: 0.0.0.0:4320
+      receivers:
+        # Receives data from other Collectors in Agent mode
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317 # Listen on all interfaces
+            http:
+              endpoint: 0.0.0.0:4318 # Listen on all interfaces
+
+      connectors:
+        elasticapm: {} # Elastic APM Connector
+
+      processors:
+        batch:
+          send_batch_size: 1000
+          timeout: 1s
+          send_batch_max_size: 1500
+        batch/metrics:
+          send_batch_max_size: 0 # Explicitly set to 0 to avoid splitting metrics requests
+          timeout: 1s
+        elasticapm: {}
+
+      exporters:
+        debug: {}
+        elasticsearch/otel:
+          endpoints:
+            - http://elasticsearch:9200
+          user: elastic
+          password: ${ES_LOCAL_PASSWORD}
+          tls:
+            insecure_skip_verify: true
+          mapping:
+            mode: otel
+
+      service:
+        extensions: [ apmconfig ]
+        pipelines:
+          metrics:
+            receivers: [otlp]
+            processors: [batch/metrics]
+            exporters: [debug, elasticsearch/otel]
+          logs:
+            receivers: [otlp]
+            processors: [batch]
+            exporters: [debug, elasticapm, elasticsearch/otel]
+          traces:
+            receivers: [otlp]
+            processors: [batch, elasticapm]
+            exporters: [debug, elasticapm, elasticsearch/otel]
+          metrics/aggregated-otel-metrics:
+            receivers:
+              - elasticapm
+            processors: [] # No processors defined in the original for this pipeline
+            exporters:
+              - debug
+              - elasticsearch/otel
+
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${ES_LOCAL_VERSION}
@@ -77,7 +149,8 @@ services:
       - ELASTICSEARCH_PASSWORD=${KIBANA_LOCAL_PASSWORD}
       - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${KIBANA_ENCRYPTION_KEY}
       - ELASTICSEARCH_PUBLICBASEURL=http://localhost:${ES_LOCAL_PORT}
-      - XPACK_SPACES_DEFAULTSOLUTION=es
+      - MONITORING_UI_CONTAINER_ELASTICSEARCH_ENABLED=true
+      - XPACK_SPACES_DEFAULTSOLUTION=oblt
     healthcheck:
       test:
         [
@@ -90,81 +163,24 @@ services:
 
   edot-collector:
     image: docker.elastic.co/elastic-agent/elastic-otel-collector:${ES_LOCAL_VERSION}
-    container_name: edot-local-dev
+    container_name: ${EDOT_LOCAL_CONTAINER_NAME}
     depends_on:
       elasticsearch:
         condition: service_healthy
-    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    command: [
+      "--config=/etc/otelcol-contrib/config.yaml",
+    ]
     configs:
       - source: edot-collector-config
         target: /etc/otelcol-contrib/config.yaml
     ports:
-      - "4317:4317"
-      - "4318:4318"
-    networks:
-      - default
-      - random-pass
-
+      - "4317:4317"  # grpc
+      - "4318:4318"  # http
+      - "4320:4320"  # opamp
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo -n > /dev/tcp/127.0.0.1/4317'"]
+      retries: 300
+      interval: 1s
 volumes:
   dev-elasticsearch:
   dev-kibana:
-
-networks:
-  random-pass:
-    external: true
-    name: random-pass-microservices_default
-
-configs:
-  edot-collector-config:
-    content: |
-      receivers:
-        otlp:
-          protocols:
-            grpc:
-              endpoint: 0.0.0.0:4317
-            http:
-              endpoint: 0.0.0.0:4318
-      extensions:
-        apmconfig:
-          source:
-            elasticsearch:
-              endpoint: http://elastic:${ES_LOCAL_PASSWORD}@elasticsearch:9200
-              cache_duration: 10s
-          opamp:
-            protocols:
-              http:
-                endpoint: 0.0.0.0:4320
-      processors:
-        batch:
-          timeout: 1s
-        elasticapm: {}
-      connectors:
-        elasticapm: {}
-      exporters:
-        elasticsearch/otel:
-          endpoints:
-            - http://elasticsearch:9200
-          user: elastic
-          password: ${ES_LOCAL_PASSWORD}
-          mapping:
-            mode: otel
-      service:
-        extensions: [apmconfig]
-        pipelines:
-          traces:
-            receivers: [otlp]
-            processors: [batch, elasticapm]
-            exporters: [elasticsearch/otel, elasticapm]
-          metrics:
-            receivers: [otlp]
-            processors: [batch]
-            exporters: [elasticsearch/otel]
-          logs:
-            receivers: [otlp]
-            processors: [batch]
-            exporters: [elasticsearch/otel, elasticapm]
-          metrics/aggregated-otel-metrics:
-            receivers: [elasticapm]
-            processors: []
-            exporters: [elasticsearch/otel]
-

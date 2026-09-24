@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,14 @@ var passwordApi = builder.Configuration["PASSWORD_API_URL"] ?? "http://password-
 var policyService = builder.Configuration["POLICY_SERVICE_URL"] ?? "http://policy-service:5001";
 var historyService = builder.Configuration["HISTORY_SERVICE_URL"] ?? "http://history-service:5002";
 var notificationService = builder.Configuration["NOTIFICATION_SERVICE_URL"] ?? "http://notification-service:5003";
+
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeFormattedMessage = true;
+    logging.IncludeScopes = true;
+    logging.ParseStateValues = true;
+    logging.AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint));
+});
 
 builder.Services.AddHttpClient();
 builder.Services.AddOpenTelemetry()
@@ -28,6 +37,7 @@ builder.Services.AddOpenTelemetry()
         .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)));
 
 var app = builder.Build();
+app.Logger.LogInformation("api gateway started");
 app.MapGet("/health", async (IHttpClientFactory factory) => {
     var client = factory.CreateClient();
     var services = new Dictionary<string, string> { ["gateway"] = "UP" };

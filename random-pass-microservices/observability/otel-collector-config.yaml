@@ -13,7 +13,7 @@ exporters:
     tls:
       insecure: true
   otlp/elastic:
-    endpoint: edot-local-dev:4317
+    endpoint: edot-collector:4317
     tls:
       insecure: true
 

@@ -44,6 +44,7 @@ if ask_confirmation; then
   echo "Do you want to remove the following Docker images?"
   echo "- docker.elastic.co/elasticsearch/elasticsearch:9.5.4-arm64"
   echo "- docker.elastic.co/kibana/kibana:9.5.4-arm64"
+  echo "- docker.elastic.co/elastic-agent/elastic-edot-collector:9.5.4-arm64"
   if ask_confirmation; then
     if docker rmi "docker.elastic.co/elasticsearch/elasticsearch:9.5.4-arm64" >/dev/null 2>&1; then
       echo "Image docker.elastic.co/elasticsearch/elasticsearch:9.5.4-arm64 removed successfully"
@@ -54,6 +55,11 @@ if ask_confirmation; then
       echo "Image docker.elastic.co/kibana/kibana:9.5.4-arm64 removed successfully"
     else
       echo "Failed to remove image docker.elastic.co/kibana/kibana:9.5.4-arm64. It might be in use."
+    fi
+    if docker rmi docker.elastic.co/elastic-agent/elastic-edot-collector:9.5.4-arm64 >/dev/null 2>&1; then
+      echo "Image docker.elastic.co/elastic-agent/elastic-edot-collector:9.5.4-arm64 removed successfully"
+    else
+      echo "Failed to remove image docker.elastic.co/elastic-agent/elastic-edot-collector:9.5.4-arm64. It might be in use."
     fi
   fi
   echo "Start-local successfully removed"

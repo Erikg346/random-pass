@@ -49,6 +49,7 @@ PASSWORD_CHARS = (
 def generate_password():
     REQUEST_METRICS["requests"] += 1
     started_at = time.perf_counter()
+    app.logger.info("password generation request received")
 
     try:
         length = int(request.args.get("length", 12))

@@ -105,6 +105,19 @@ The collector fans out traces to both Jaeger and Elastic EDOT. Open Kibana at
 generator emits one request every two seconds and prints structured request
 logs, making the distributed request flow visible during a presentation.
 
+### Restore SLOs after a fresh Elastic install
+
+The repository stores the SLO definitions in
+`dashboards/random-pass-slos.json`. After starting Kibana, restore them with:
+
+```bash
+chmod +x scripts/bootstrap-slos.sh
+ELASTIC_PASSWORD='<elastic-password>' ./scripts/bootstrap-slos.sh
+```
+
+Kibana creates the managed SLO transforms automatically from these definitions;
+the generated transform definitions should not be versioned separately.
+
 ## Usage Examples
 
 - Access the password API at `http://localhost:5000/generate-password?length=12`.

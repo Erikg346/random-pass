@@ -45,68 +45,58 @@
       "type": "markdown"
     },
     {
-      "collapsed": false,
-      "title": "🛡️ SLOs",
       "grid": {
-        "y": 4
+        "y": 4,
+        "x": 0,
+        "w": 16,
+        "h": 6
       },
-      "id": "1d365e14-0989-4307-9d10-26e58c9c4e05",
-      "panels": [
-        {
-          "grid": {
-            "y": 0,
-            "x": 0,
-            "w": 16,
-            "h": 6
-          },
-          "config": {
-            "hide_title": true,
-            "overview_mode": "single",
-            "slo_id": "b100eb80-1cf0-4c1f-8ba7-487daea520c7",
-            "slo_instance_id": "*"
-          },
-          "id": "e0c5e991-c236-4cbe-8b7f-3a447ed02590",
-          "type": "slo_overview"
-        },
-        {
-          "grid": {
-            "y": 0,
-            "x": 16,
-            "w": 16,
-            "h": 6
-          },
-          "config": {
-            "hide_title": true,
-            "overview_mode": "single",
-            "slo_id": "c648b8e0-10d7-4875-bcb2-91dfc66bd31e",
-            "slo_instance_id": "*"
-          },
-          "id": "a3d258d3-af67-47e9-b926-d341d4403005",
-          "type": "slo_overview"
-        },
-        {
-          "grid": {
-            "y": 0,
-            "x": 32,
-            "w": 16,
-            "h": 6
-          },
-          "config": {
-            "hide_title": true,
-            "overview_mode": "single",
-            "slo_id": "1dcc4056-c0de-4db9-b74e-1dfe18380973",
-            "slo_instance_id": "*"
-          },
-          "id": "d18db178-40ca-4868-9441-f85a9f2b4ae7",
-          "type": "slo_overview"
-        }
-      ]
+      "config": {
+        "hide_title": false,
+        "overview_mode": "single",
+        "slo_id": "b4684a7d-5aed-418a-9632-b7eab0f20f36",
+        "slo_instance_id": "*"
+      },
+      "id": "slo-availability-1",
+      "type": "slo_overview"
+    },
+    {
+      "grid": {
+        "y": 4,
+        "x": 16,
+        "w": 16,
+        "h": 6
+      },
+      "config": {
+        "hide_title": false,
+        "overview_mode": "single",
+        "slo_id": "6991ee5a-3068-4de4-a7d3-6d2b16db36de",
+        "slo_instance_id": "*"
+      },
+      "id": "slo-error-rate-1",
+      "type": "slo_overview"
+    },
+    {
+      "grid": {
+        "y": 4,
+        "x": 32,
+        "w": 16,
+        "h": 6
+      },
+      "config": {
+        "hide_title": false,
+        "overview_mode": "single",
+        "slo_id": "07cc29fb-7003-4cfe-a2ae-1294987ea766",
+        "slo_instance_id": "*"
+      },
+      "id": "slo-latency-1",
+      "type": "slo_overview"
     },
     {
       "collapsed": false,
       "title": "🧭 Executive Overview",
       "grid": {
-        "y": 5
+        "y": 10
       },
       "id": "9b4f5f0d-79fa-40df-98cc-3ded8d55e281",
       "panels": [
@@ -340,7 +330,7 @@
       "collapsed": false,
       "title": "🕸️ Service Dependencies",
       "grid": {
-        "y": 6
+        "y": 16
       },
       "id": "e465f37d-038b-4dfb-a7ca-468d45f60c80",
       "panels": [
@@ -364,7 +354,7 @@
       "collapsed": false,
       "title": "🚦 RED Signals",
       "grid": {
-        "y": 7
+        "y": 20
       },
       "id": "936e7810-eff2-43ae-b84c-4e1c71bac8b6",
       "panels": [
@@ -692,7 +682,7 @@
       "collapsed": false,
       "title": "🏥 Service Health Ranking",
       "grid": {
-        "y": 8
+        "y": 26
       },
       "id": "71554e41-dfc6-4bdf-a8dd-fdaad53d78b4",
       "panels": [
@@ -741,7 +731,7 @@
       "collapsed": false,
       "title": "🧰 Troubleshoot",
       "grid": {
-        "y": 9
+        "y": 30
       },
       "id": "e481c016-68e5-4b48-9644-c13977609b3f",
       "panels": [

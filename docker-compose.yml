@@ -1,39 +1,134 @@
-version: "3.9"
+version: '3.8'
 
 services:
-  ui:
-    build: ./ui
+  redis:
+    image: redis:7-alpine
     ports:
-      - "8080:8080"
-    environment:
-      - API_URL=http://api:5000
-    depends_on:
-      - api
+      - "6379:6379"
 
-  api:
-    build: ./api
+  password-api:
+    build:
+      context: ./password-api
     ports:
       - "5000:5000"
     environment:
       - REDIS_HOST=redis
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - POLICY_SERVICE_URL=http://policy-service:5001
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5003
+      - FLAGD_HOST=flagd
+      - FLAGD_PORT=8013
+      - SERVICE_VERSION=2.7.0
+      - SERVICE_DOMAIN=security
+      - SERVICE_TIER=backend
+      - TEAM_NAME=identity-platform
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=2.7.0,deployment.environment=local,service.domain=security,service.tier=backend,team.name=identity-platform
     depends_on:
       - redis
-      - collector
+      - otel-collector
+      - flagd
+      - policy-service
+      - notification-service
 
-  redis:
-    image: redis:7
+  policy-service:
+    build:
+      context: ./policy-service-dotnet
+    ports:
+      - "5001:5001"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=2.0.0-dotnet,deployment.environment=local,service.domain=security,service.tier=backend,team.name=identity-platform
+    depends_on:
+      - otel-collector
 
-  collector:
-    image: otel/opentelemetry-collector:0.96.0
+  api-gateway:
+    build:
+      context: ./api-gateway-dotnet
+    ports:
+      - "8080:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - PASSWORD_API_URL=http://password-api:5000
+      - POLICY_SERVICE_URL=http://policy-service:5001
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5003
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=1.0.0-dotnet,deployment.environment=local,service.domain=edge,service.tier=gateway,team.name=platform-engineering
+    depends_on:
+      - password-api
+      - policy-service
+      - notification-service
+      - otel-collector
+
+  notification-service:
+    build:
+      context: ./notification-service
+    ports:
+      - "5003:5003"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=notification-service
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=random-pass,service.version=1.0.0-node,deployment.environment=local,service.domain=messaging,service.tier=backend,team.name=platform-engineering,service.language.name=nodejs,service.framework.name=express,telemetry.sdk.language=nodejs
+      - PORT=5003
+    depends_on:
+      - otel-collector
+
+  load-generator:
+    build:
+      context: ./load-generator
+    environment:
+      - TARGET_URL=http://password-api:5000/generate-password
+      - INTERVAL_SECONDS=2
+    depends_on:
+      - password-api
+    profiles:
+      - demo
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - password-api
+
+  flagd:
+    image: ghcr.io/open-feature/flagd:latest
+    command: ["start", "--uri", "file:./etc/flagd/flags.json"]
+    volumes:
+      - ./flagd/config:/etc/flagd
+    ports:
+      - "8013:8013"
+      - "8016:8016"
+
+  flagd-ui:
+    build:
+      context: .
+      dockerfile: ./flagd-ui/Dockerfile
+    environment:
+      FLAGD_UI_OTEL_FLAGD_HOST: flagd
+      FLAGD_UI_STORAGE_FILE_PATH: /app/data/flags.json
+      SECRET_KEY_BASE: dev-only-secret-key-base-for-local-compose-0123456789abcdef0123456789abcdef
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    volumes:
+      - ./flagd/config:/app/data
+    ports:
+      - "4000:4000"
+    depends_on:
+      - flagd
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    user: "0:0"
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "4317:4317"
-    depends_on:
-      - jaeger
+      - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - default
+      - elastic-observability
 
-  jaeger:
-    image: jaegertracing/all-in-one:1.54
-    ports:
-      - "16686:16686"
+networks:
+  default:
+    driver: bridge
+  elastic-observability:
+    external: true
+    name: elastic-start-local_default

@@ -3,9 +3,10 @@ Werkzeug==2.2.2
 setuptools==70.3.0
 redis==4.5.4
 requests==2.32.3
-opentelemetry-api==1.18.0
-opentelemetry-sdk==1.18.0
-opentelemetry-exporter-otlp==1.18.0
-opentelemetry-instrumentation-flask==0.39b0
-opentelemetry-instrumentation-redis==0.39b0
-opentelemetry-instrumentation-requests==0.39b0
+opentelemetry-api==1.44.0
+opentelemetry-sdk==1.44.0
+opentelemetry-exporter-otlp==1.44.0
+opentelemetry-instrumentation-flask==0.65b0
+opentelemetry-instrumentation-redis==0.65b0
+opentelemetry-instrumentation-requests==0.65b0
+openfeature-provider-flagd==0.5.2

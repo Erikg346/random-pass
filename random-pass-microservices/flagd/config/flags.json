@@ -1,42 +1,63 @@
 {
   "flags": {
-    "password_generation_enabled": {
+    "frontend_feature_enabled": {
+      "defaultVariant": "on",
       "state": "ENABLED",
-      "variants": { "on": true, "off": false },
-      "defaultVariant": "on"
-    },
-    "policy_management_enabled": {
-      "state": "ENABLED",
-      "variants": { "on": true, "off": false },
-      "defaultVariant": "on"
+      "variants": {
+        "off": false,
+        "on": true
+      }
     },
     "history_logging_enabled": {
+      "defaultVariant": "on",
       "state": "ENABLED",
-      "variants": { "on": true, "off": false },
-      "defaultVariant": "on"
+      "variants": {
+        "off": false,
+        "on": true
+      }
     },
-    "frontend_feature_enabled": {
+    "password_generation_enabled": {
+      "defaultVariant": "on",
       "state": "ENABLED",
-      "variants": { "on": true, "off": false },
-      "defaultVariant": "on"
+      "variants": {
+        "off": false,
+        "on": true
+      }
+    },
+    "policy_management_enabled": {
+      "defaultVariant": "on",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
     },
     "simulate_api_latency": {
-      "state": "ENABLED",
-      "variants": { "on": true, "off": false },
       "defaultVariant": "off",
-      "description": "Add latency to password API requests"
+      "description": "Add latency to password API requests",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
     },
     "simulate_history_failure": {
-      "state": "ENABLED",
-      "variants": { "on": true, "off": false },
       "defaultVariant": "off",
-      "description": "Make history logging fail for a demo"
+      "description": "Make history logging fail for a demo",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
     },
     "simulate_policy_failure": {
-      "state": "ENABLED",
-      "variants": { "on": true, "off": false },
       "defaultVariant": "off",
-      "description": "Make policy lookups fail for a demo"
+      "description": "Make policy lookups fail for a demo",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
     }
   }
 }

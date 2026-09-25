@@ -10,8 +10,6 @@ defmodule FlagdUi.Storage do
   use GenServer
   require Logger
 
-  @file_path Application.compile_env!(:flagd_ui, :storage_file_path)
-
   @topic "flags"
 
   def start_link(opts) do
@@ -26,7 +24,7 @@ defmodule FlagdUi.Storage do
   @impl true
   def init(_) do
     state =
-      case File.read(@file_path) do
+      case File.read(storage_file_path()) do
         {:ok, ""} ->
           %{}
 
@@ -105,14 +103,19 @@ defmodule FlagdUi.Storage do
     # Write-then-rename so concurrent readers (e.g. flagd, or another Storage
     # process in tests) never observe a truncated/empty file mid-write:
     # rename/2 is atomic on the same filesystem, plain File.write!/2 is not.
-    tmp_path = @file_path <> ".tmp"
+    file_path = storage_file_path()
+    tmp_path = file_path <> ".tmp"
     File.write!(tmp_path, json_string)
-    File.rename!(tmp_path, @file_path)
+    File.rename!(tmp_path, file_path)
 
     Logger.info("Wrote new state to file")
   end
 
   defp broadcast(state) do
     Phoenix.PubSub.broadcast(FlagdUi.PubSub, @topic, {:flags_changed, state})
+  end
+
+  defp storage_file_path do
+    Application.fetch_env!(:flagd_ui, :storage_file_path)
   end
 end

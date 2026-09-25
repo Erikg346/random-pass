@@ -27,7 +27,17 @@ var policy = new { min_length = 12, require_uppercase = true, require_special = 
 
 app.MapGet("/health", () => Results.Ok(new { status = "UP" }));
 app.MapGet("/version", () => Results.Ok(new { version = "2.0.0-dotnet" }));
-app.MapGet("/policies/default", () => Results.Ok(policy));
+app.MapGet("/policies/default", (HttpRequest request) => {
+    if (request.Headers.TryGetValue("X-Demo-Policy-Failure", out var requestedFailure)
+        && requestedFailure == "true") {
+        app.Logger.LogWarning("Demo scenario active: policy_failure");
+        return Results.Problem(
+            title: "Policy lookup unavailable",
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+
+    return Results.Ok(policy);
+});
 app.MapGet("/policies", () => Results.Ok(new Dictionary<string, object> { ["default"] = policy }));
 
 app.Run();

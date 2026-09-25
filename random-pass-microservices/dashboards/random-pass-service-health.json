@@ -36,7 +36,7 @@
       "config": {
         "hide_title": true,
         "hide_border": true,
-        "content": "##  🔐 Random Pass Service Health\nMonitor platform health, identify impacted services, analyze dependencies, and investigate failures from a single operational cockpit.",
+        "content": "##  \ud83d\udd10 Random Pass Service Health\nMonitor platform health, identify impacted services, analyze dependencies, and investigate failures from a single operational cockpit.",
         "settings": {
           "open_links_in_new_tab": true
         }
@@ -54,7 +54,7 @@
       "config": {
         "hide_title": false,
         "overview_mode": "single",
-        "slo_id": "b4684a7d-5aed-418a-9632-b7eab0f20f36",
+        "slo_id": "27be4ba9-fe43-40d0-85e4-496f026223de",
         "slo_instance_id": "*"
       },
       "id": "slo-availability-1",
@@ -70,7 +70,7 @@
       "config": {
         "hide_title": false,
         "overview_mode": "single",
-        "slo_id": "6991ee5a-3068-4de4-a7d3-6d2b16db36de",
+        "slo_id": "f90f7c53-0c25-493d-ba71-38902cc05d64",
         "slo_instance_id": "*"
       },
       "id": "slo-error-rate-1",
@@ -86,7 +86,7 @@
       "config": {
         "hide_title": false,
         "overview_mode": "single",
-        "slo_id": "07cc29fb-7003-4cfe-a2ae-1294987ea766",
+        "slo_id": "3a80415a-207a-41d5-b84d-b7301a56ea0e",
         "slo_instance_id": "*"
       },
       "id": "slo-latency-1",
@@ -94,7 +94,7 @@
     },
     {
       "collapsed": false,
-      "title": "🧭 Executive Overview",
+      "title": "\ud83e\udded Executive Overview",
       "grid": {
         "y": 10
       },
@@ -328,7 +328,7 @@
     },
     {
       "collapsed": false,
-      "title": "🕸️ Service Dependencies",
+      "title": "\ud83d\udd78\ufe0f Service Dependencies",
       "grid": {
         "y": 16
       },
@@ -352,7 +352,7 @@
     },
     {
       "collapsed": false,
-      "title": "🚦 RED Signals",
+      "title": "\ud83d\udea6 RED Signals",
       "grid": {
         "y": 20
       },
@@ -680,7 +680,7 @@
     },
     {
       "collapsed": false,
-      "title": "🏥 Service Health Ranking",
+      "title": "\ud83c\udfe5 Service Health Ranking",
       "grid": {
         "y": 26
       },
@@ -729,7 +729,7 @@
     },
     {
       "collapsed": false,
-      "title": "🧰 Troubleshoot",
+      "title": "\ud83e\uddf0 Troubleshoot",
       "grid": {
         "y": 30
       },

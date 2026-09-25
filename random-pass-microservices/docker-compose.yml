@@ -17,6 +17,8 @@ services:
       - POLICY_SERVICE_URL=http://policy-service:5001
       - HISTORY_SERVICE_URL=http://history-service:5002
       - NOTIFICATION_SERVICE_URL=http://notification-service:5003
+      - FLAGD_HOST=flagd
+      - FLAGD_PORT=8013
       - SERVICE_VERSION=2.7.0
       - SERVICE_DOMAIN=security
       - SERVICE_TIER=backend
@@ -122,8 +124,11 @@ services:
       dockerfile: ./flagd-ui/Dockerfile
     environment:
       FLAGD_UI_OTEL_FLAGD_HOST: flagd
+      FLAGD_UI_STORAGE_FILE_PATH: /app/data/flags.json
       SECRET_KEY_BASE: dev-only-secret-key-base-for-local-compose-0123456789abcdef0123456789abcdef
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    volumes:
+      - ./flagd/config:/app/data
     ports:
       - "4000:4000"
     depends_on:
@@ -134,6 +139,9 @@ services:
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    networks:
+      - default
+      - elastic-observability
     depends_on:
       - jaeger
 
@@ -147,3 +155,6 @@ services:
 networks:
   default:
     driver: bridge
+  elastic-observability:
+    external: true
+    name: elastic-start-local_default

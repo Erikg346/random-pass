@@ -9,6 +9,49 @@ set -eu
 temp_mappings=$(mktemp)
 trap "rm -f $temp_mappings" EXIT
 
+create_burn_rate_rule() {
+    slo_name="$1"
+    slo_id="$2"
+    rule_payload=$(jq -n --arg name "$slo_name" --arg slo_id "$slo_id" '
+        {
+            name: ($name + " burn-rate alert"),
+            rule_type_id: "slo.rules.burnRate",
+            consumer: "slo",
+            schedule: {interval: "1m"},
+            notify_when: "onActionGroupChange",
+            tags: ["random-pass", "slo"],
+            actions: [],
+            params: {
+                sloId: $slo_id,
+                windows: [
+                    {
+                        id: "fast-burn",
+                        burnRateThreshold: 14.4,
+                        maxBurnRateThreshold: null,
+                        longWindow: {value: 1, unit: "h"},
+                        shortWindow: {value: 5, unit: "m"},
+                        actionGroup: "slo.burnRate.alert"
+                    },
+                    {
+                        id: "sustained-burn",
+                        burnRateThreshold: 6,
+                        maxBurnRateThreshold: null,
+                        longWindow: {value: 6, unit: "h"},
+                        shortWindow: {value: 30, unit: "m"},
+                        actionGroup: "slo.burnRate.high"
+                    }
+                ]
+            }
+        }')
+
+    rule_id=$(printf '%s' "$rule_payload" | curl -fsS -u "$ELASTIC_USER:$ELASTIC_PASSWORD" \
+        -X POST "$KIBANA_URL/api/alerting/rule" \
+        -H 'kbn-xsrf: true' \
+        -H 'content-type: application/json' \
+        --data-binary @- | jq -r '.id')
+    printf 'Created burn-rate alert: %s (ID: %s)\n' "$slo_name" "$rule_id"
+}
+
 # Track SLOs by name and index
 jq -c '.[]' dashboards/random-pass-slos.json | while read -r slo; do
   name=$(printf '%s' "$slo" | jq -r '.name')
@@ -23,6 +66,7 @@ jq -c '.[]' dashboards/random-pass-slos.json | while read -r slo; do
   
   # Store mapping for dashboard update
   printf '%s|%s\n' "$name" "$slo_id" >> "$temp_mappings"
+    create_burn_rate_rule "$name" "$slo_id"
 done
 
 # Update the dashboard JSON with the new SLO IDs

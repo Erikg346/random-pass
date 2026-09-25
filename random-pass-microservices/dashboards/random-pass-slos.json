@@ -32,12 +32,13 @@
     "indicator": {
       "type": "sli.apm.transactionDuration",
       "params": {
-        "index": "metrics-transaction.1m.otel-default",
+        "index": "metrics-apm*,apm-*,metrics-*.otel-*",
         "service": "password-api",
         "environment": "*",
         "transactionType": "request",
-        "transactionName": "GET /generate-password",
-        "threshold": 750
+        "transactionName": "/generate-password",
+        "threshold": 750,
+        "filter": ""
       }
     },
     "timeWindow": {
@@ -60,11 +61,12 @@
     "indicator": {
       "type": "sli.apm.transactionErrorRate",
       "params": {
-        "index": "metrics-transaction.1m.otel-default",
+        "index": "metrics-apm*,apm-*,metrics-*.otel-*",
         "service": "password-api",
         "environment": "*",
         "transactionType": "request",
-        "transactionName": "GET /generate-password"
+        "transactionName": "/generate-password",
+        "filter": ""
       }
     },
     "timeWindow": {

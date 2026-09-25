@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Notification delivery availability (internal)",
+    "description": "Supporting internal objective for notification event acceptance",
+    "indicator": {
+      "type": "sli.apm.transactionErrorRate",
+      "params": {
+        "index": "metrics-transaction.1m.otel-default",
+        "service": "notification-service",
+        "environment": "*",
+        "transactionType": "request",
+        "transactionName": "POST /notifications"
+      }
+    },
+    "timeWindow": {
+      "duration": "7d",
+      "type": "rolling"
+    },
+    "budgetingMethod": "occurrences",
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "random-pass",
+      "internal",
+      "notifications"
+    ]
+  },
+  {
+    "name": "User password generation latency",
+    "description": "Percentage of user password-generation requests completed within 750ms at the password generation service",
+    "indicator": {
+      "type": "sli.apm.transactionDuration",
+      "params": {
+        "index": "metrics-apm*,apm-*,metrics-*.otel-*",
+        "service": "password-api",
+        "environment": "*",
+        "transactionType": "request",
+        "transactionName": "GET /generate-password",
+        "threshold": 750,
+        "filter": ""
+      }
+    },
+    "timeWindow": {
+      "duration": "7d",
+      "type": "rolling"
+    },
+    "budgetingMethod": "occurrences",
+    "objective": {
+      "target": 0.99
+    },
+    "tags": [
+      "random-pass",
+      "user-facing",
+      "latency"
+    ]
+  },
+  {
+    "name": "User password generation availability",
+    "description": "Percentage of user password-generation requests that complete successfully at the password generation service",
+    "indicator": {
+      "type": "sli.apm.transactionErrorRate",
+      "params": {
+        "index": "metrics-apm*,apm-*,metrics-*.otel-*",
+        "service": "password-api",
+        "environment": "*",
+        "transactionType": "request",
+        "transactionName": "GET /generate-password",
+        "filter": ""
+      }
+    },
+    "timeWindow": {
+      "duration": "7d",
+      "type": "rolling"
+    },
+    "budgetingMethod": "occurrences",
+    "objective": {
+      "target": 0.99
+    },
+    "tags": [
+      "random-pass",
+      "user-facing",
+      "availability"
+    ]
+  }
+]

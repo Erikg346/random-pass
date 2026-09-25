@@ -1,0 +1,55 @@
+{
+  "flags": {
+    "frontend_feature_enabled": {
+      "defaultVariant": "on",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
+    },
+    "password_generation_enabled": {
+      "defaultVariant": "on",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
+    },
+    "policy_management_enabled": {
+      "defaultVariant": "on",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
+    },
+    "simulate_api_latency": {
+      "defaultVariant": "off",
+      "description": "Add latency to password API requests",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
+    },
+    "simulate_redis_latency": {
+      "defaultVariant": "off",
+      "description": "Add latency to the Redis dependency call",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
+    },
+    "simulate_policy_failure": {
+      "defaultVariant": "off",
+      "description": "Make policy lookups fail for a demo",
+      "state": "ENABLED",
+      "variants": {
+        "off": false,
+        "on": true
+      }
+    }
+  }
+}

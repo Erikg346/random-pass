@@ -3,15 +3,18 @@ receivers:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 10s
+    timeout: 20s
+  redis:
+    endpoint: redis:6379
+    collection_interval: 10s
 
 processors:
   batch:
 
 exporters:
-  otlp:
-    endpoint: jaeger:4317
-    tls:
-      insecure: true
   otlp/elastic:
     endpoint: edot-collector:4317
     tls:
@@ -22,9 +25,9 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp, otlp/elastic]
+      exporters: [otlp/elastic]
     metrics:
-      receivers: [otlp]
+      receivers: [otlp, docker_stats, redis]
       processors: [batch]
       exporters: [otlp/elastic]
     logs:

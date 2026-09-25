@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://otel-collector:4317";
 var passwordApi = builder.Configuration["PASSWORD_API_URL"] ?? "http://password-api:5000";
 var policyService = builder.Configuration["POLICY_SERVICE_URL"] ?? "http://policy-service:5001";
-var historyService = builder.Configuration["HISTORY_SERVICE_URL"] ?? "http://history-service:5002";
 var notificationService = builder.Configuration["NOTIFICATION_SERVICE_URL"] ?? "http://notification-service:5003";
 
 builder.Logging.AddOpenTelemetry(logging =>
@@ -41,7 +40,7 @@ app.Logger.LogInformation("api gateway started");
 app.MapGet("/health", async (IHttpClientFactory factory) => {
     var client = factory.CreateClient();
     var services = new Dictionary<string, string> { ["gateway"] = "UP" };
-    foreach (var item in new[] { ("password_api", $"{passwordApi}/health"), ("policy_service", $"{policyService}/health"), ("history_service", $"{historyService}/health"), ("notification_service", $"{notificationService}/health") }) {
+    foreach (var item in new[] { ("password_api", $"{passwordApi}/health"), ("policy_service", $"{policyService}/health"), ("notification_service", $"{notificationService}/health") }) {
         try {
             var response = await client.GetFromJsonAsync<JsonElement>(item.Item2);
             services[item.Item1] = response.GetProperty("status").GetString() ?? "UNKNOWN";
@@ -60,5 +59,4 @@ app.MapGet("/generate-password", async (HttpRequest request, IHttpClientFactory 
     return Results.Content(await response.Content.ReadAsStringAsync(), "application/json", statusCode: (int)response.StatusCode);
 });
 app.MapGet("/policy-health", async (IHttpClientFactory factory) => Results.Ok(await factory.CreateClient().GetFromJsonAsync<object>($"{policyService}/health")));
-app.MapGet("/history-health", async (IHttpClientFactory factory) => Results.Ok(await factory.CreateClient().GetFromJsonAsync<object>($"{historyService}/health")));
 app.Run();

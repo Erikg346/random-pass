@@ -8,14 +8,6 @@
         "on": true
       }
     },
-    "history_logging_enabled": {
-      "defaultVariant": "on",
-      "state": "ENABLED",
-      "variants": {
-        "off": false,
-        "on": true
-      }
-    },
     "password_generation_enabled": {
       "defaultVariant": "on",
       "state": "ENABLED",
@@ -41,9 +33,9 @@
         "on": true
       }
     },
-    "simulate_history_failure": {
+    "simulate_redis_latency": {
       "defaultVariant": "off",
-      "description": "Make history logging fail for a demo",
+      "description": "Add latency to the Redis dependency call",
       "state": "ENABLED",
       "variants": {
         "off": false,

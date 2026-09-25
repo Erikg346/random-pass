@@ -36,7 +36,6 @@ REQUEST_METRICS = {"requests": 0, "cache_hits": 0, "generated": 0, "errors": 0}
 
 # --- Redis ---
 redis_host = os.getenv("REDIS_HOST", "redis")
-history_service_url = os.getenv("HISTORY_SERVICE_URL", "http://history-service:5002")
 policy_service_url = os.getenv("POLICY_SERVICE_URL", "http://policy-service:5001")
 notification_service_url = os.getenv("NOTIFICATION_SERVICE_URL", "http://notification-service:5003")
 redis_client = redis.Redis(
@@ -70,6 +69,7 @@ def generate_password():
 
     scenarios = {
         "api_latency": is_scenario_enabled("simulate_api_latency"),
+        "redis_latency": is_scenario_enabled("simulate_redis_latency"),
         "policy_failure": is_scenario_enabled("simulate_policy_failure"),
     }
     span = trace.get_current_span()
@@ -112,6 +112,12 @@ def generate_password():
         }), 503
 
     try:
+        if scenarios["redis_latency"]:
+            app.logger.warning("Demo scenario active: redis_latency")
+            with trace.get_tracer("password-api").start_as_current_span("redis.dependency.simulated_latency") as redis_span:
+                redis_span.set_attribute("db.system", "redis")
+                redis_span.set_attribute("demo.scenario.redis_latency", True)
+                time.sleep(0.75)
         cached = redis_client.get(cache_key)
         if cached:
             source = "cache"
@@ -129,15 +135,6 @@ def generate_password():
             redis_client.setex(cache_key, 60, password)
         except RedisError as e:
             app.logger.warning(f"Redis set failed: {e}")
-
-    try:
-        requests.post(
-            f"{history_service_url}/log-password-generation",
-            json={"user_id": "demo-user", "length": length, "source": source, "trace_id": trace_id},
-            timeout=0.75,
-        )
-    except requests.RequestException as e:
-        app.logger.warning(f"History service unavailable: {e}")
 
     try:
         requests.post(

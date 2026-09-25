@@ -30,8 +30,8 @@ printf 'Dashboard: http://localhost:5601/app/dashboards#/view/%s\n' "$DASHBOARD_
 ```
 
 The load generator sends a password-generation request every two seconds. The
-project collector forwards its telemetry to Jaeger and to the EDOT collector on
-the shared `elastic-start-local_default` Docker network.
+project collector forwards telemetry to the EDOT collector on the shared
+`elastic-start-local_default` Docker network.
 
 ## Verify
 
@@ -39,7 +39,6 @@ the shared `elastic-start-local_default` Docker network.
 - Gateway health: http://localhost:8080/health
 - Kibana: http://localhost:5601
 - SLOs: http://localhost:5601/app/slos
-- Jaeger: http://localhost:16686
 
 In Kibana Service Inventory, choose **Last 15 minutes** and disable comparison.
 The current traffic should appear within about a minute.
@@ -81,6 +80,9 @@ To discard all demo state, stop the microservices and remove the Elastic
 volumes, then follow **Fresh Elastic Install** again.
 
 ```sh
-docker compose --profile demo down -v
-./elastic-start-local/uninstall.sh
+./reset.sh
 ```
+
+This preserves the tracked Elastic bootstrap files. Do not use
+`elastic-start-local/uninstall.sh` for a shared checkout because it removes its
+own Compose and environment files.

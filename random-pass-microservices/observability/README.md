@@ -1,22 +1,22 @@
-# Observability Tools for Random Password Microservices
+# Observability for Random Pass
 
-This directory contains the configuration and documentation for observability tools used in the Random Password Microservices architecture.
+This directory contains the OpenTelemetry collector configuration for the
+Random Pass demo.
 
-## OpenTelemetry
+## Telemetry Pipeline
 
-The OpenTelemetry collector is configured to collect and export telemetry data from the various microservices. The configuration file is located in `otel-collector-config.yaml`.
+The collector receives application traces, metrics, and logs over OTLP. It also
+collects Docker container metrics and Redis metrics directly, then forwards all
+signals to Elastic EDOT.
 
-## Prometheus
+## Included Signals
 
-Prometheus is used for monitoring and alerting. The configuration file for Prometheus is located in `prometheus.yaml`. This file defines the scrape configurations and alerting rules for the microservices.
-
-## Setup Instructions
-
-1. Ensure that the OpenTelemetry collector and Prometheus are properly installed and configured in your environment.
-2. Update the configuration files as necessary to match your deployment setup.
-3. Start the OpenTelemetry collector and Prometheus services.
-4. Verify that the telemetry data is being collected and can be viewed in your monitoring dashboard.
+- Application traces, metrics, and logs
+- Docker CPU, memory, network, and block-I/O metrics
+- Redis infrastructure metrics
 
 ## Usage
 
-Refer to the individual configuration files for detailed settings and options. Make sure to consult the official documentation for OpenTelemetry and Prometheus for advanced configurations and best practices.
+The collector starts with `docker compose --profile demo up -d --build`. Open
+Kibana at `http://localhost:5601` to investigate service, SLO, alert, ML, and
+infrastructure telemetry.

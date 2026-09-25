@@ -36,7 +36,7 @@
         "service": "password-api",
         "environment": "*",
         "transactionType": "request",
-        "transactionName": "/generate-password",
+        "transactionName": "GET /generate-password",
         "threshold": 750,
         "filter": ""
       }
@@ -65,7 +65,7 @@
         "service": "password-api",
         "environment": "*",
         "transactionType": "request",
-        "transactionName": "/generate-password",
+        "transactionName": "GET /generate-password",
         "filter": ""
       }
     },

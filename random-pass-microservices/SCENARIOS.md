@@ -17,6 +17,16 @@ The response contains `active_scenarios: ["api_latency"]`. In Elastic, open a
 slow `password-api` trace; its root span has `demo.scenario.api_latency: true`.
 This demonstrates a latency regression without an availability incident.
 
+## Redis Dependency Latency
+
+Set `simulate_redis_latency` to `on`, then repeat the request.
+
+Expected behavior: requests remain successful but take roughly 750 ms longer.
+The response contains `active_scenarios: ["redis_latency"]`. In Elastic, open
+the trace and inspect the `redis.dependency.simulated_latency` span, which is
+tagged with `db.system: redis` and `demo.scenario.redis_latency: true`. This
+demonstrates separating a slow dependency from a general application slowdown.
+
 ## Policy Outage
 
 Set `simulate_policy_failure` to `on`, then repeat the request.

@@ -4,6 +4,7 @@ set -eu
 : "${KIBANA_URL:=http://localhost:5601}"
 : "${ELASTIC_USER:=elastic}"
 : "${ELASTIC_PASSWORD:?Set ELASTIC_PASSWORD before running this script}"
+: "${DASHBOARD_OUTPUT:=dashboards/random-pass-service-health.generated.json}"
 
 # Create a temporary file to store SLO ID mappings
 temp_mappings=$(mktemp)
@@ -82,9 +83,10 @@ with open('$temp_mappings') as f:
         name, slo_id = line.strip().split('|')
         mappings[name] = slo_id
 
-# Read the dashboard
-dashboard_path = Path('dashboards/random-pass-service-health.json')
-with open(dashboard_path) as f:
+# Read the source dashboard and write the generated copy separately.
+source_dashboard_path = Path('dashboards/random-pass-service-health.json')
+dashboard_path = Path('$DASHBOARD_OUTPUT')
+with open(source_dashboard_path) as f:
     dashboard = json.load(f)
 
 # Update SLO panels with correct IDs

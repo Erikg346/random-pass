@@ -5,10 +5,11 @@ flags of the flagd service.
 
 This is a [Phoenix](https://www.phoenixframework.org/) project.
 
-## Running the application
+## Running in the Demo
 
-The application can be run with the rest of the demo using the documented
-[docker compose or make commands](https://opentelemetry.io/docs/demo/#running-the-demo).
+Run `./bootstrap.sh` from the repository root, then open http://localhost:4000.
+The UI writes the same `flagd/config/flags.json` file watched by Flagd, so each
+selection takes effect immediately.
 
 ## Local development
 
@@ -18,7 +19,7 @@ The application can be run with the rest of the demo using the documented
   * `cp ../flagd/demo.flagd.json ./data/demo.flagd.json`
 * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
-Now you can visit `localhost:4000` from your browser.
+Now you can visit `http://localhost:4000` from your browser.
 
 ## Scheduler
 
@@ -63,31 +64,13 @@ power users.
 You can read the current configuration using this HTTP call:
 
 ```json
-$ curl localhost:8080/feature/api/read | jq
+$ curl http://localhost:4000/api/read | jq
 
 {
   "flags": {
-    "adFailure": {
+    "simulate_api_latency": {
       "defaultVariant": "off",
-      "description": "Fail ad service",
-      "state": "ENABLED",
-      "variants": {
-        "off": false,
-        "on": true
-      }
-    },
-    "adHighCpu": {
-      "defaultVariant": "off",
-      "description": "Triggers high cpu load in the ad service",
-      "state": "ENABLED",
-      "variants": {
-        "off": false,
-        "on": true
-      }
-    },
-    "adManualGc": {
-      "defaultVariant": "off",
-      "description": "Triggers full manual garbage collections in the ad service",
+      "description": "Add latency to password API requests",
       "state": "ENABLED",
       "variants": {
         "off": false,
@@ -107,8 +90,8 @@ Bear in mind that _all_ the data will be rewritten by this write operation.
 ```sh
 $ curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"data": {"$schema":"https://flagd.dev/schema/v0/flags.json","flags":{"adFailure":{"defaultVariant":"on","description":"Fail ad service","state":"ENABLED","variants":{"off":false,"on":true}}...' \
-  http://localhost:8080/feature/api/write
+  --data '{"data": {"flags":{"simulate_api_latency":{"defaultVariant":"on","description":"Add latency to password API requests","state":"ENABLED","variants":{"off":false,"on":true}}}}}' \
+  http://localhost:4000/api/write
 ```
 
 In addition to the `/read` and `/write` endpoint, we also offer these endpoint

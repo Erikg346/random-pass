@@ -16,8 +16,11 @@ Prerequisites:
 ```
 
 The bootstrap starts Elastic, the microservices demo, continuous traffic, SLOs,
-burn-rate alerts, and the Service Health dashboard. See [BOOTSTRAP.md](BOOTSTRAP.md)
-for restart, reset, and ML setup details.
+burn-rate alerts, the Service Health dashboard, and local APM anomaly detection.
+See [BOOTSTRAP.md](BOOTSTRAP.md) for restart and reset details.
+
+At completion, the bootstrap prints the local Kibana URL and the generated
+`elastic` login credentials.
 
 Run `./reset.sh` to remove all local demo and Elastic data volumes, then run
 `./bootstrap.sh` for a clean state.

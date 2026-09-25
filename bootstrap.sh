@@ -49,10 +49,14 @@ else
     | jq -r '.saved_objects[0].id // empty')"
 fi
 
+./scripts/bootstrap-ml.sh
+
 printf '\nRandom Pass is ready.\n'
 printf 'Frontend:  http://localhost:3000\n'
 printf 'Gateway:   http://localhost:8080/health\n'
 printf 'Kibana:    %s\n' "$KIBANA_URL"
+printf 'Username:  elastic\n'
+printf 'Password:  %s\n' "$ELASTIC_PASSWORD"
 printf 'SLOs:      %s/app/slos\n' "$KIBANA_URL"
 if [[ -n "$dashboard_id" ]]; then
   printf 'Dashboard: %s/app/dashboards#/view/%s\n' "$KIBANA_URL" "$dashboard_id"

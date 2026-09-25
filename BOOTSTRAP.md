@@ -45,20 +45,16 @@ The current traffic should appear within about a minute.
 
 ## Machine Learning
 
-After the load generator has produced a baseline, enable APM anomaly detection
-for the `local` environment in Kibana. Keep the environment filter scoped to
-`local`; it prevents local demo traffic from being combined with another
-environment's baseline.
-
-The enabled job should analyze transaction metrics by `service.name` and
-`transaction.type`, with detectors for:
+Bootstrap creates and starts a local-environment APM anomaly-detection job. It
+analyzes transaction metrics by `service.name` and `transaction.type`, with
+detectors for:
 
 - high mean transaction latency
 - transaction throughput
 - high mean failed-transaction rate
 
-Its datafeed should read `metrics-apm*`, `apm-*`, and `metrics-*.otel-*`, with
-filters for `processor.event: metric`, `metricset.name: transaction`, and
+Its datafeed reads `metrics-apm*`, `apm-*`, and `metrics-*.otel-*`, with filters
+for `processor.event: metric`, `metricset.name: transaction`, and
 `service.environment: local`. A 15-minute bucket span is appropriate for this
 low-volume demo. Let the default traffic run for 10-15 minutes before presenting
 an anomaly scenario.

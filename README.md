@@ -2,6 +2,8 @@
 
 Random Pass is a containerized password-generation demo with feature-controlled
 incident scenarios and Elastic Observability.
+<img width="1052" height="888" alt="image" src="https://github.com/user-attachments/assets/21f66aa7-9091-4e16-8e13-d4f3059e1087" />
+
 
 ## Quick Start
 
